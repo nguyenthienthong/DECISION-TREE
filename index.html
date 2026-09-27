@@ -1,0 +1,826 @@
+<!DOCTYPE html>
+<html lang="vi" class="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Khám Phá Cây Quyết Định (Decision Tree Explorer Lab) - Dark Mode</title>
+  
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          colors: {
+            darkMain: '#0b0f19',
+            darkCard: '#131b2e',
+            darkBorder: '#24324f'
+          }
+        }
+      }
+    }
+  </script>
+  
+  <!-- KaTeX for beautiful math formulas -->
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/katex.min.css">
+  <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/katex.min.js"></script>
+  <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/contrib/auto-render.min.js"></script>
+
+  <!-- Lucide Icons -->
+  <script src="https://unpkg.com/lucide@latest"></script>
+
+  <!-- Custom CSS -->
+  <link rel="stylesheet" href="css/styles.css">
+</head>
+<body class="bg-[#0b0f19] text-slate-100 flex flex-col min-h-screen selection:bg-cyan-500/30 selection:text-cyan-200">
+
+  <!-- Header Cao Cấp & Chống Vỡ Dòng -->
+  <header class="bg-[#0f172a]/90 backdrop-blur-md border-b border-slate-800 sticky top-0 z-40 shadow-xl">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex flex-col md:flex-row items-center justify-between gap-3 py-1 md:py-0">
+      
+      <!-- Brand Logo (Gọn gàng) -->
+      <div class="flex items-center gap-3 flex-shrink-0">
+        <div class="w-10 h-10 rounded-xl bg-gradient-to-tr from-cyan-500 via-blue-600 to-indigo-600 flex items-center justify-center text-white shadow-lg shadow-cyan-500/25 ring-1 ring-white/20">
+          <i data-lucide="git-fork" class="w-5 h-5"></i>
+        </div>
+        <div class="flex items-center gap-2">
+          <h1 class="text-base sm:text-lg font-black tracking-wider bg-gradient-to-r from-cyan-400 via-sky-300 to-indigo-300 bg-clip-text text-transparent">
+            DECISION TREE
+          </h1>
+          <span class="px-2 py-0.5 bg-cyan-500/10 text-cyan-400 border border-cyan-500/30 text-[10px] font-bold rounded-full uppercase tracking-widest">Lab 2.0</span>
+        </div>
+      </div>
+
+      <!-- Navigation Tabs Dạng Capsule (Gọn gàng, vừa vặn tuyệt đối) -->
+      <nav class="bg-slate-950/80 p-1.5 rounded-2xl border border-slate-800 flex items-center gap-1 overflow-x-auto max-w-full">
+        <button data-tab="tab-lab" class="nav-tab-btn active px-3.5 py-1.5 text-xs font-bold rounded-xl whitespace-nowrap flex items-center gap-2 transition-all bg-gradient-to-r from-cyan-500 to-blue-600 text-white shadow-md shadow-cyan-500/20">
+          <i data-lucide="layout" class="w-4 h-4"></i>
+          <span>Phòng Thí Nghiệm</span>
+        </button>
+        <button data-tab="tab-math" class="nav-tab-btn px-3.5 py-1.5 text-xs font-semibold text-slate-400 hover:text-slate-100 hover:bg-slate-900 rounded-xl whitespace-nowrap flex items-center gap-2 transition-all">
+          <i data-lucide="binary" class="w-4 h-4"></i>
+          <span>Công Thức & Giải Thích</span>
+        </button>
+        <button data-tab="tab-data" class="nav-tab-btn px-3.5 py-1.5 text-xs font-semibold text-slate-400 hover:text-slate-100 hover:bg-slate-900 rounded-xl whitespace-nowrap flex items-center gap-2 transition-all">
+          <i data-lucide="database" class="w-4 h-4"></i>
+          <span>Bộ Dữ Liệu</span>
+        </button>
+        <button data-tab="tab-rf" class="nav-tab-btn px-3.5 py-1.5 text-xs font-semibold text-slate-400 hover:text-slate-100 hover:bg-slate-900 rounded-xl whitespace-nowrap flex items-center gap-2 transition-all">
+          <i data-lucide="trees" class="w-4 h-4 text-emerald-400"></i>
+          <span>Rừng Ngẫu Nhiên (Random Forest)</span>
+        </button>
+      </nav>
+
+    </div>
+  </header>
+
+  <!-- Main Content Area -->
+  <main class="flex-1 max-w-7xl w-full mx-auto p-4 sm:p-6 lg:p-8 space-y-6">
+
+    <!-- ==================== TAB 1: PHÒNG THÍ NGHIỆM TƯƠNG TÁC (TREE LAB) ==================== -->
+    <div id="tab-lab" class="tab-panel space-y-6">
+      
+      <!-- Hướng Dẫn Nhanh Dành Cho Người Mới Bắt Đầu (Easy Mode Alert) -->
+      <div class="bg-gradient-to-r from-cyan-950/40 via-blue-950/30 to-slate-900 border border-cyan-500/30 rounded-2xl p-4 sm:p-5 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+        <div class="flex items-center gap-3.5">
+          <div class="w-10 h-10 rounded-xl bg-cyan-500/20 text-cyan-400 flex items-center justify-center flex-shrink-0 border border-cyan-500/30">
+            <i data-lucide="sparkles" class="w-5 h-5"></i>
+          </div>
+          <div>
+            <h3 class="text-sm font-bold text-white flex items-center gap-2">
+              <span>Cách hiểu Cây Quyết Định cực kỳ đơn giản:</span>
+            </h3>
+            <p class="text-xs text-slate-300 mt-0.5 leading-relaxed">
+              Mỗi ô vuông trên cây là một câu hỏi phân loại. Cây sẽ tìm câu hỏi nào giúp <strong class="text-cyan-400">loại bỏ sự mơ hồ nhiều nhất</strong> để đặt lên đầu tiên!
+            </p>
+          </div>
+        </div>
+        <div class="flex items-center gap-2 text-xs font-semibold text-slate-300 bg-slate-950/60 px-3.5 py-2 rounded-xl border border-slate-800 flex-shrink-0">
+          <i data-lucide="mouse-pointer-click" class="w-4 h-4 text-cyan-400"></i>
+          <span>Click vào nút bất kỳ để xem giải thích</span>
+        </div>
+      </div>
+
+      <!-- Grid 2 Cột: Bảng Điều Khiển + Cây Quyết Định SVG -->
+      <div class="grid grid-cols-1 lg:grid-cols-4 gap-6">
+        
+        <!-- Cột Trái: Bảng Điều Khiển & Siêu Tham Số -->
+        <div class="lg:col-span-1 space-y-5">
+          
+          <!-- Box Cấu hình mô hình -->
+          <div class="bg-slate-900/80 p-5 rounded-2xl border border-slate-800 shadow-xl space-y-4">
+            <h2 class="text-xs font-bold text-slate-400 uppercase tracking-widest flex items-center gap-2">
+              <i data-lucide="sliders" class="w-4 h-4 text-cyan-400"></i>
+              Cấu hình mô hình
+            </h2>
+
+            <!-- Chọn Dataset -->
+            <div>
+              <label class="block text-xs font-semibold text-slate-300 mb-1.5">Tệp Dữ Liệu</label>
+              <select id="dataset-select" class="w-full px-3 py-2.5 bg-slate-950 border border-slate-800 rounded-xl text-xs font-semibold text-white focus:ring-2 focus:ring-cyan-500 outline-none transition-all"></select>
+            </div>
+
+            <!-- Chọn Thuật toán -->
+            <div>
+              <label class="block text-xs font-semibold text-slate-300 mb-1.5">Thuật Toán / Tiêu Chuẩn</label>
+              <select id="algorithm-select" class="w-full px-3 py-2.5 bg-slate-950 border border-slate-800 rounded-xl text-xs font-semibold text-white focus:ring-2 focus:ring-cyan-500 outline-none transition-all">
+                <option value="CART">CART (Gini Impurity - Chuẩn Giáo Trình)</option>
+                <option value="ID3">ID3 (Entropy & Information Gain)</option>
+                <option value="C4.5">C4.5 (Gain Ratio & Chuẩn Hóa)</option>
+              </select>
+              <p id="algo-hint" class="text-[11px] text-slate-500 mt-1">So sánh Gini của các thuộc tính: ai có Gini nhỏ nhất sẽ làm Root.</p>
+            </div>
+
+            <!-- Chọn Kiểu Phân Nhánh: Cây Nhị Phân vs Cây Đa Phân -->
+            <div>
+              <div class="flex items-center justify-between mb-1.5">
+                <label class="text-xs font-semibold text-slate-300">Dạng Cấu Trúc Cây</label>
+                <span id="split-mode-badge" class="text-[10px] px-2 py-0.5 rounded-full bg-emerald-500/20 text-emerald-400 font-mono font-bold border border-emerald-500/30">Nhị Phân (Yes/No)</span>
+              </div>
+              <div class="grid grid-cols-2 gap-1.5 p-1 bg-slate-950 border border-slate-800 rounded-xl">
+                <button type="button" id="btn-mode-binary" class="py-1.5 px-2 rounded-lg text-xs font-bold text-center transition-all bg-gradient-to-r from-emerald-500 to-teal-600 text-slate-950 shadow-md">
+                  🌿 Cây Nhị Phân
+                </button>
+                <button type="button" id="btn-mode-multiway" class="py-1.5 px-2 rounded-lg text-xs font-semibold text-center transition-all text-slate-400 hover:text-white">
+                  🌲 Cây Đa Phân
+                </button>
+              </div>
+              <p id="split-mode-hint" class="text-[11px] text-slate-400 mt-1 leading-snug">
+                <span class="text-emerald-400 font-semibold">Cây Nhị Phân:</span> Mỗi nút chỉ chia đúng 2 nhánh: <strong>Đúng (Yes)</strong> hoặc <strong>Sai (No)</strong> (Chuẩn CART & Scikit-learn).
+              </p>
+            </div>
+
+            <hr class="border-slate-800">
+
+            <!-- Hyperparameters: maxDepth -->
+            <div>
+              <div class="flex justify-between text-xs font-semibold text-slate-300 mb-1.5">
+                <span>Độ sâu tối đa (max_depth)</span>
+                <span id="max-depth-val" class="text-cyan-400 font-bold font-mono">4</span>
+              </div>
+              <input id="max-depth-slider" type="range" min="1" max="8" value="4" class="w-full cursor-pointer">
+              <p class="text-[11px] text-slate-500 mt-1">Hạn chế số tầng câu hỏi để tránh học vẹt (Overfitting).</p>
+            </div>
+
+            <!-- minSamplesSplit -->
+            <div>
+              <div class="flex justify-between text-xs font-semibold text-slate-300 mb-1.5">
+                <span>Mẫu tối thiểu phân chia (min_split)</span>
+                <span id="min-samples-val" class="text-cyan-400 font-bold font-mono">2</span>
+              </div>
+              <input id="min-samples-slider" type="range" min="2" max="10" value="2" class="w-full cursor-pointer">
+              <p class="text-[11px] text-slate-500 mt-1">Số phần tử tối thiểu để tiếp tục rẽ nhánh.</p>
+            </div>
+
+            <!-- minImpurityDecrease -->
+            <div>
+              <div class="flex justify-between text-xs font-semibold text-slate-300 mb-1.5">
+                <span>Ngưỡng giảm Impurity tối thiểu</span>
+                <span id="min-impurity-val" class="text-cyan-400 font-bold font-mono">0.00</span>
+              </div>
+              <input id="min-impurity-slider" type="range" min="0" max="0.3" step="0.02" value="0.00" class="w-full cursor-pointer">
+              <p class="text-[11px] text-slate-500 mt-1">Dừng nếu lượng bất định giảm đi không đáng kể.</p>
+            </div>
+
+            <button id="btn-retrain" class="w-full py-2.5 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 text-white font-bold text-xs rounded-xl shadow-lg shadow-blue-500/20 transition-all flex items-center justify-center gap-2">
+              <i data-lucide="refresh-cw" class="w-4 h-4"></i>
+              <span>Huấn Luyện Lại Cây</span>
+            </button>
+          </div>
+
+          <!-- Thử Nghiệm Dự Đoán Mẫu Mới (Inference Playground) -->
+          <div class="bg-slate-900/80 p-5 rounded-2xl border border-slate-800 shadow-xl space-y-4">
+            <h2 class="text-xs font-bold text-amber-400 uppercase tracking-widest flex items-center gap-2">
+              <i data-lucide="zap" class="w-4 h-4"></i>
+              Thử nghiệm dự đoán mẫu mới
+            </h2>
+            <p class="text-xs text-slate-400">Chọn thuộc tính bên dưới để xem đường rẽ nhánh phát sáng theo thời gian thực:</p>
+
+            <div id="inference-inputs" class="space-y-3"></div>
+
+            <button id="btn-run-inference" class="w-full py-2.5 bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 text-white font-bold text-xs rounded-xl shadow-lg shadow-emerald-500/20 transition-all flex items-center justify-center gap-2">
+              <i data-lucide="play" class="w-4 h-4 text-white"></i>
+              <span>Chạy Dự Đoán & Theo Vết</span>
+            </button>
+
+            <!-- Kết quả dự đoán -->
+            <div id="inference-result-box" class="hidden p-4 bg-gradient-to-r from-emerald-950/60 to-slate-950 border border-emerald-500/30 rounded-xl space-y-1">
+              <span class="text-xs font-semibold text-emerald-400">Kết quả dự đoán của cây:</span>
+              <div id="inference-result-value" class="text-2xl font-black text-emerald-300 font-mono"></div>
+              <div id="inference-result-confidence" class="text-xs text-slate-300 mt-1 leading-relaxed"></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Cột Phải: Trực Quan Hóa Cây Quyết Định (SVG Canvas) -->
+        <div class="lg:col-span-3 space-y-6">
+          
+          <!-- Bảng Thống Kê Nhanh (Stats Badges) -->
+          <div class="grid grid-cols-2 sm:grid-cols-6 gap-3">
+            <div class="bg-slate-900/80 p-3.5 rounded-xl border border-slate-800">
+              <span class="text-[10px] text-slate-500 uppercase font-bold tracking-wider">Tập dữ liệu</span>
+              <p id="stat-dataset-name" class="text-xs font-bold text-slate-200 truncate mt-1">-</p>
+            </div>
+            <div class="bg-slate-900/80 p-3.5 rounded-xl border border-slate-800">
+              <span class="text-[10px] text-slate-500 uppercase font-bold tracking-wider">Tổng số mẫu (N)</span>
+              <p id="stat-samples-count" class="text-lg font-black text-cyan-400 font-mono mt-0.5">0</p>
+            </div>
+            <div class="bg-slate-900/80 p-3.5 rounded-xl border border-slate-800">
+              <span class="text-[10px] text-slate-500 uppercase font-bold tracking-wider">Số thuộc tính</span>
+              <p id="stat-features-count" class="text-lg font-black text-indigo-400 font-mono mt-0.5">0</p>
+            </div>
+            <div class="bg-slate-900/80 p-3.5 rounded-xl border border-slate-800">
+              <span class="text-[10px] text-slate-500 uppercase font-bold tracking-wider">Tổng số nút</span>
+              <p id="stat-nodes-count" class="text-lg font-black text-slate-200 font-mono mt-0.5">0</p>
+            </div>
+            <div class="bg-slate-900/80 p-3.5 rounded-xl border border-slate-800">
+              <span class="text-[10px] text-slate-500 uppercase font-bold tracking-wider">Số nút lá</span>
+              <p id="stat-leaves-count" class="text-lg font-black text-emerald-400 font-mono mt-0.5">0</p>
+            </div>
+            <div class="bg-slate-900/80 p-3.5 rounded-xl border border-slate-800">
+              <span class="text-[10px] text-slate-500 uppercase font-bold tracking-wider">Độ sâu thực tế</span>
+              <p id="stat-tree-depth" class="text-lg font-black text-purple-400 font-mono mt-0.5">0</p>
+            </div>
+          </div>
+
+          <!-- Khu Vực Vẽ Cây Quyết Định (SVG Canvas Dark Mode) -->
+          <div id="tree-card-container" class="bg-slate-900/80 rounded-2xl border border-slate-800 shadow-2xl overflow-hidden flex flex-col transition-all">
+            <div class="px-5 py-3.5 bg-slate-950/80 border-b border-slate-800 flex items-center justify-between">
+              <div class="flex items-center gap-2">
+                <i data-lucide="network" class="w-4 h-4 text-cyan-400"></i>
+                <span class="text-xs font-bold text-slate-200 uppercase tracking-wider">Cấu Trúc Cây Quyết Định (Interactive SVG)</span>
+                <span class="text-[11px] text-slate-400 font-normal ml-2 hidden sm:inline">• Click vào nút để xem giải thích toán</span>
+              </div>
+              <!-- Nút Xem Cách Tính Từng Bước & Thanh điều khiển Zoom & Fullscreen -->
+              <div class="flex items-center gap-2">
+                <button id="btn-open-math-modal" class="px-3 py-1.5 bg-cyan-500/15 hover:bg-cyan-500/25 text-cyan-400 border border-cyan-500/30 rounded-xl text-xs font-bold flex items-center gap-1.5 transition-all shadow-xs cursor-pointer">
+                  <i data-lucide="calculator" class="w-3.5 h-3.5"></i>
+                  <span>Xem Cách Tính Từng Bước</span>
+                </button>
+                <div class="h-4 w-[1px] bg-slate-800 mx-0.5"></div>
+                <button id="btn-zoom-in" title="Phóng to" class="p-1.5 text-slate-400 hover:text-cyan-400 hover:bg-slate-800 rounded-lg border border-slate-800 transition-all cursor-pointer">
+                  <i data-lucide="zoom-in" class="w-4 h-4"></i>
+                </button>
+                <button id="btn-zoom-out" title="Thu nhỏ" class="p-1.5 text-slate-400 hover:text-cyan-400 hover:bg-slate-800 rounded-lg border border-slate-800 transition-all cursor-pointer">
+                  <i data-lucide="zoom-out" class="w-4 h-4"></i>
+                </button>
+                <button id="btn-zoom-reset" title="Căn chỉnh vừa vặn" class="p-1.5 text-slate-400 hover:text-cyan-400 hover:bg-slate-800 rounded-lg border border-slate-800 transition-all cursor-pointer">
+                  <i data-lucide="rotate-ccw" class="w-4 h-4"></i>
+                </button>
+                <button id="btn-fullscreen" title="Toàn màn hình (Fullscreen)" class="p-1.5 text-slate-400 hover:text-cyan-400 hover:bg-slate-800 rounded-lg border border-slate-800 transition-all cursor-pointer">
+                  <i data-lucide="maximize" class="w-4 h-4"></i>
+                </button>
+              </div>
+            </div>
+
+            <!-- Vùng hiển thị SVG trên nền tối có lưới tinh tế -->
+            <div id="tree-canvas-container" class="w-full relative overflow-hidden bg-grid-pattern" style="min-height: 520px; background-color: #0d1322;">
+              <!-- SVG sẽ được render tại đây -->
+            </div>
+          </div>
+
+          <!-- Trực Quan Ranh Giới Quyết Định 2D (Decision Boundary) -->
+          <div id="boundary-section" class="bg-slate-900/80 rounded-2xl border border-slate-800 shadow-xl p-5 space-y-4">
+            <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
+              <div>
+                <h3 class="text-sm font-bold text-white flex items-center gap-2">
+                  <i data-lucide="scan" class="w-4 h-4 text-cyan-400"></i>
+                  Ranh Giới Quyết Định 2D (Decision Boundary)
+                </h3>
+                <p class="text-xs text-slate-400 mt-0.5 flex flex-wrap items-center gap-2">
+                  <span>Minh họa các đường cắt vuông góc với các trục tọa độ (Axis-aligned orthogonal splits).</span>
+                  <span class="text-[10px] text-cyan-400 bg-cyan-950/60 px-2 py-0.5 rounded-full border border-cyan-800/40 font-medium">💡 Trực quan nhất với bộ dữ liệu số: Hoa Iris, Tim Mạch, Giá Nhà</span>
+                </p>
+              </div>
+              <div class="flex items-center gap-3">
+                <div class="flex items-center gap-1.5 text-xs">
+                  <span class="text-slate-400 font-medium">Trục X:</span>
+                  <select id="boundary-feat-x" class="px-2.5 py-1 bg-slate-950 border border-slate-800 rounded-lg text-xs font-semibold text-slate-200 outline-none"></select>
+                </div>
+                <div class="flex items-center gap-1.5 text-xs">
+                  <span class="text-slate-400 font-medium">Trục Y:</span>
+                  <select id="boundary-feat-y" class="px-2.5 py-1 bg-slate-950 border border-slate-800 rounded-lg text-xs font-semibold text-slate-200 outline-none"></select>
+                </div>
+              </div>
+            </div>
+
+            <div class="flex justify-center bg-slate-950 rounded-xl p-3 border border-slate-800">
+              <canvas id="boundary-canvas" width="680" height="340" class="max-w-full rounded-lg bg-slate-950 shadow-inner"></canvas>
+            </div>
+          </div>
+
+        </div>
+
+      </div>
+    </div>
+
+    <!-- ==================== TAB 2: CÔNG THỨC & BƯỚC GIẢI CHI TIẾT (MATH & STEPS) ==================== -->
+    <div id="tab-math" class="tab-panel hidden space-y-8">
+      
+      <div class="bg-slate-900/80 rounded-2xl border border-slate-800 shadow-xl p-6 space-y-5">
+        <div class="flex items-center justify-between border-b border-slate-800 pb-4">
+          <div>
+            <h2 class="text-lg font-bold text-white flex items-center gap-2">
+              <i data-lucide="calculator" class="w-5 h-5 text-cyan-400"></i>
+              Tính Toán Từng Bước Thực Tế Trên Bộ Dữ Liệu Đang Chọn
+            </h2>
+            <p class="text-xs text-slate-400 mt-1">
+              Khám phá quá trình thuật toán tính toán cụ thể các con số tại nút gốc để tìm ra thuộc tính phân nhánh tối ưu.
+            </p>
+          </div>
+          <span class="px-3 py-1 bg-cyan-500/10 text-cyan-400 border border-cyan-500/30 text-xs font-bold rounded-full">Bước phân chia đầu tiên</span>
+        </div>
+
+        <div id="step-math-content">
+          <!-- Nội dung do math-explainer.js tạo động -->
+        </div>
+      </div>
+
+      <!-- Tổng quan lý thuyết các công thức -->
+      <div>
+        <h2 class="text-base font-bold text-white mb-4 flex items-center gap-2">
+          <i data-lucide="book-marked" class="w-5 h-5 text-indigo-400"></i>
+          Hệ Thống Công Thức Cốt Lõi Của Các Thuật Toán
+        </h2>
+        <div id="theory-overview-container">
+          <!-- Render tự động -->
+        </div>
+      </div>
+    </div>
+
+    <!-- ==================== TAB 3: BỘ DỮ LIỆU & TẢI LÊN (DATASET STUDIO) ==================== -->
+    <div id="tab-data" class="tab-panel hidden space-y-6">
+      <div class="bg-slate-900/80 rounded-2xl border border-slate-800 shadow-xl p-6 space-y-5">
+        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-slate-800 pb-4">
+          <div>
+            <h2 id="dataset-manager-title" class="text-lg font-bold text-white">Bảng Dữ Liệu</h2>
+            <p id="dataset-manager-desc" class="text-xs text-slate-400 mt-1">Xem, thêm, bớt dòng dữ liệu hoặc tải lên tệp CSV riêng của bạn.</p>
+          </div>
+          <div class="flex items-center gap-2">
+            <!-- Nút Tải lên CSV -->
+            <label class="px-4 py-2 bg-gradient-to-r from-cyan-600 to-blue-600 hover:from-cyan-500 hover:to-blue-500 text-white text-xs font-bold rounded-xl cursor-pointer flex items-center gap-2 shadow-lg shadow-cyan-500/20 transition-all">
+              <i data-lucide="upload" class="w-4 h-4"></i>
+              <span>Tải Lên File CSV</span>
+              <input id="csv-file-input" type="file" accept=".csv" class="hidden">
+            </label>
+            <!-- Nút Xuất CSV -->
+            <button id="btn-export-csv" class="px-4 py-2 bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs font-semibold rounded-xl flex items-center gap-2 border border-slate-700 transition-all">
+              <i data-lucide="download" class="w-4 h-4"></i>
+              <span>Xuất CSV</span>
+            </button>
+          </div>
+        </div>
+
+        <!-- Bảng hiển thị dữ liệu Dark Mode -->
+        <div class="overflow-x-auto border border-slate-800 rounded-xl">
+          <table class="w-full text-left">
+            <thead id="dataset-thead"></thead>
+            <tbody id="dataset-tbody"></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- ==================== TAB 4: CẨM NANG THUẬT TOÁN (THEORY & GUIDE) ==================== -->
+    <div id="tab-theory" class="tab-panel hidden space-y-6">
+      
+      <div class="bg-slate-900/80 rounded-2xl border border-slate-800 shadow-xl p-6 space-y-6">
+        <h2 class="text-lg font-bold text-white flex items-center gap-2">
+          <i data-lucide="layers" class="w-5 h-5 text-indigo-400"></i>
+          So Sánh Các Biến Thể Thuật Toán Cây Quyết Định (ID3, C4.5, CART, CHAID)
+        </h2>
+        
+        <div class="overflow-x-auto border border-slate-800 rounded-xl">
+          <table class="w-full text-left text-xs sm:text-sm">
+            <thead class="bg-slate-950 text-slate-300 uppercase font-semibold text-xs border-b border-slate-800">
+              <tr>
+                <th class="py-3 px-4">Thuật toán</th>
+                <th class="py-3 px-4">Tác giả & Năm</th>
+                <th class="py-3 px-4">Tiêu chí phân nhánh</th>
+                <th class="py-3 px-4">Dạng cây</th>
+                <th class="py-3 px-4">Xử lý dữ liệu</th>
+                <th class="py-3 px-4">Đặc điểm nổi bật</th>
+              </tr>
+            </thead>
+            <tbody class="divide-y divide-slate-800">
+              <tr class="hover:bg-slate-800/40">
+                <td class="py-3 px-4 font-bold text-cyan-400">ID3</td>
+                <td class="py-3 px-4 text-slate-300">Ross Quinlan (1986)</td>
+                <td class="py-3 px-4 font-medium text-slate-200">Information Gain (Entropy)</td>
+                <td class="py-3 px-4 text-slate-300">Đa nhánh (Multi-way)</td>
+                <td class="py-3 px-4 text-slate-300">Chỉ biến rời rạc (Categorical)</td>
+                <td class="py-3 px-4 text-slate-400">Thuật toán nền tảng, dễ hiểu nhưng dễ overfitting và thiên vị thuộc tính nhiều giá trị.</td>
+              </tr>
+              <tr class="hover:bg-slate-800/40">
+                <td class="py-3 px-4 font-bold text-purple-400">C4.5</td>
+                <td class="py-3 px-4 text-slate-300">Ross Quinlan (1993)</td>
+                <td class="py-3 px-4 font-medium text-slate-200">Gain Ratio (Split Info)</td>
+                <td class="py-3 px-4 text-slate-300">Đa nhánh & Nhị phân</td>
+                <td class="py-3 px-4 text-slate-300">Cả rời rạc & liên tục (Số thực)</td>
+                <td class="py-3 px-4 text-slate-400">Khắc phục thiên vị của ID3, hỗ trợ giá trị khuyết thiếu và cắt tỉa (Pruning).</td>
+              </tr>
+              <tr class="hover:bg-slate-800/40">
+                <td class="py-3 px-4 font-bold text-emerald-400">CART</td>
+                <td class="py-3 px-4 text-slate-300">Breiman et al. (1984)</td>
+                <td class="py-3 px-4 font-medium text-slate-200">Gini Impurity (Phân loại) / MSE (Hồi quy)</td>
+                <td class="py-3 px-4 font-semibold text-emerald-400">Luôn là cây nhị phân (Binary)</td>
+                <td class="py-3 px-4 text-slate-300">Cả rời rạc & liên tục</td>
+                <td class="py-3 px-4 text-slate-400">Thư viện Scikit-Learn sử dụng; tính toán cực nhanh, hỗ trợ cả Phân loại và Hồi quy.</td>
+              </tr>
+              <tr class="hover:bg-slate-800/40">
+                <td class="py-3 px-4 font-bold text-amber-400">CHAID</td>
+                <td class="py-3 px-4 text-slate-300">Gordon V. Kass (1980)</td>
+                <td class="py-3 px-4 font-medium text-slate-200">Kiểm định Chi-square (\(\chi^2\))</td>
+                <td class="py-3 px-4 text-slate-300">Đa nhánh</td>
+                <td class="py-3 px-4 text-slate-300">Chủ yếu biến phân loại</td>
+                <td class="py-3 px-4 text-slate-400">Dùng kiểm định ý nghĩa thống kê để quyết định có gộp hoặc phân nhánh hay không.</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <!-- Overfitting & Các kỹ thuật cắt tỉa (Pruning) -->
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6 pt-4">
+          <div class="bg-slate-950/70 p-5 rounded-xl border border-slate-800 space-y-3">
+            <h3 class="font-bold text-cyan-400 text-sm flex items-center gap-2">
+              <i data-lucide="scissors" class="w-4 h-4"></i>
+              Pre-pruning (Cắt tỉa sớm)
+            </h3>
+            <p class="text-xs text-slate-300 leading-relaxed">
+              Dừng việc phát triển cây ngay trong quá trình xây dựng nếu thỏa mãn một trong các điều kiện chặn (Early stopping):
+            </p>
+            <ul class="text-xs text-slate-400 list-disc list-inside space-y-1">
+              <li><strong class="text-white">max_depth</strong>: Đạt giới hạn số tầng tối đa.</li>
+              <li><strong class="text-white">min_samples_split</strong>: Số lượng mẫu ở node nhỏ hơn ngưỡng cho phép.</li>
+              <li><strong class="text-white">min_impurity_decrease</strong>: Lượng Gain hoặc Gini giảm không đáng kể.</li>
+            </ul>
+            <p class="text-xs text-cyan-300 font-medium bg-cyan-950/40 p-2.5 rounded-lg border border-cyan-500/20">
+              👉 Ưu điểm: Huấn luyện nhanh, tiết kiệm bộ nhớ, ngăn cây mọc quá sâu gây học vẹt.
+            </p>
+          </div>
+
+          <div class="bg-slate-950/70 p-5 rounded-xl border border-slate-800 space-y-3">
+            <h3 class="font-bold text-purple-400 text-sm flex items-center gap-2">
+              <i data-lucide="git-commit" class="w-4 h-4"></i>
+              Post-pruning (Cắt tỉa sau / Cost Complexity)
+            </h3>
+            <p class="text-xs text-slate-300 leading-relaxed">
+              Cho phép cây phát triển tối đa (Overfitting), sau đó tỉa bớt các nhánh từ dưới lên dựa trên hàm chi phí phạt độ phức tạp:
+            </p>
+            <div class="katex-render text-center text-xs py-1 text-white" data-formula="R_\\alpha(T) = R(T) + \\alpha |T|"></div>
+            <p class="text-xs text-slate-400">
+              Với <span class="font-mono text-purple-300">R(T)</span> là sai số trên tập dữ liệu, <span class="font-mono text-purple-300">|T|</span> là số lượng nút lá, <span class="font-mono text-purple-300">&alpha;</span> là hệ số phạt độ phức tạp.
+            </p>
+            <p class="text-xs text-purple-300 font-medium bg-purple-950/40 p-2.5 rounded-lg border border-purple-500/20">
+              👉 Ưu điểm: Tránh bỏ sót các tương tác thuộc tính tiềm ẩn.
+            </p>
+          </div>
+        </div>
+
+        <!-- Mở rộng lên Ensemble -->
+        <div class="bg-gradient-to-r from-cyan-950/40 via-blue-950/30 to-purple-950/30 p-5 rounded-xl border border-cyan-500/30 space-y-3">
+          <h3 class="font-bold text-white text-sm flex items-center gap-2">
+            <i data-lucide="trees" class="w-4 h-4 text-emerald-400"></i>
+            Từ Cây Đơn Lẻ Đến Học Tập Kết Hợp (Ensemble Learning)
+          </h3>
+          <p class="text-xs text-slate-300 leading-relaxed">
+            Mặc dù Decision Tree trực quan và dễ giải thích (White-box model), mô hình đơn lẻ dễ nhạy cảm với nhiễu dữ liệu (High Variance). Vì vậy trong thực tế, các mô hình Ensemble hàng đầu đều được phát triển dựa trên cây quyết định:
+          </p>
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 text-xs">
+            <div class="bg-slate-950/80 p-3.5 rounded-xl border border-slate-800">
+              <strong class="text-cyan-400">Random Forest (Bagging):</strong> Huấn luyện hàng trăm cây độc lập trên các mẫu Bootstrap ngẫu nhiên và chọn tập con thuộc tính ngẫu nhiên, sau đó lấy biểu quyết đa số (Majority Voting) giúp triệt tiêu phương sai.
+            </div>
+            <div class="bg-slate-950/80 p-3.5 rounded-xl border border-slate-800">
+              <strong class="text-purple-400">Gradient Boosting (GBDT / XGBoost / LightGBM):</strong> Huấn luyện cây tuần tự (Boosting), mỗi cây mới được học để bù đắp phần dư sai số (Residuals) của các cây trước đó.
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ==================== TAB 5: BỘ LUẬT IF-THEN (RULES) ==================== -->
+    <div id="tab-rules" class="tab-panel hidden space-y-6">
+      <div class="bg-slate-900/80 rounded-2xl border border-slate-800 shadow-xl p-6 space-y-4">
+        <div class="flex items-center justify-between border-b border-slate-800 pb-3">
+          <div>
+            <h2 class="text-lg font-bold text-white flex items-center gap-2">
+              <i data-lucide="terminal" class="w-5 h-5 text-cyan-400"></i>
+              Trích Xuất Bộ Luật Logic IF-THEN
+            </h2>
+            <p class="text-xs text-slate-400 mt-1">Mỗi đường đi từ nút gốc đến nút lá tương ứng với một luật logic tất định.</p>
+          </div>
+        </div>
+
+        <pre id="rules-code-container" class="bg-slate-950 text-cyan-300 p-5 rounded-xl font-mono text-xs sm:text-sm overflow-x-auto leading-relaxed shadow-inner max-h-[600px] border border-slate-800"></pre>
+      </div>
+    </div>
+
+    <!-- ==================== TAB 6: RỪNG NGẪU NHIÊN (RANDOM FOREST ARENA) ==================== -->
+    <div id="tab-rf" class="tab-panel hidden space-y-6">
+      
+      <!-- Giới thiệu 3 Trụ Cột của Random Forest -->
+      <div class="bg-gradient-to-r from-emerald-950/40 via-teal-950/30 to-slate-900 border border-emerald-500/30 rounded-2xl p-6 shadow-xl space-y-4">
+        <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 border-b border-emerald-500/20 pb-4">
+          <div class="flex items-center gap-3.5">
+            <div class="w-12 h-12 rounded-2xl bg-emerald-500/20 text-emerald-400 flex items-center justify-center border border-emerald-500/30 shadow-inner flex-shrink-0">
+              <i data-lucide="trees" class="w-6 h-6"></i>
+            </div>
+            <div>
+              <h2 class="text-lg font-bold text-white flex items-center gap-2">
+                Rừng Ngẫu Nhiên (Random Forest) - Khắc Tinh Của Học Vẹt (Overfitting)
+              </h2>
+              <p class="text-xs text-slate-300 mt-1">
+                Thay vì đặt toàn bộ niềm tin vào 1 cây quyết định duy nhất (dễ bị nhiễu và ngoại lệ dẫn dắt), Rừng Ngẫu Nhiên tập hợp hàng chục cây độc lập và dùng <strong class="text-emerald-400">Trí tuệ đám đông (Wisdom of Crowds)</strong> để ra quyết định.
+              </p>
+            </div>
+          </div>
+          <span class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-emerald-500/10 border border-emerald-500/30 text-emerald-400 text-xs font-semibold whitespace-nowrap self-start md:self-auto">
+            <i data-lucide="shield-check" class="w-4 h-4"></i>
+            Ensemble Learning (Bagging)
+          </span>
+        </div>
+
+        <!-- 3 Trụ Cột Cơ Chế -->
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-4 pt-2">
+          <div class="bg-slate-950/70 p-4 rounded-xl border border-slate-800 space-y-2 hover:border-emerald-500/40 transition-all">
+            <div class="flex items-center gap-2 text-emerald-400 font-bold text-xs uppercase tracking-wider">
+              <i data-lucide="shuffle" class="w-4 h-4"></i>
+              <span>1. Bootstrap Sampling</span>
+            </div>
+            <p class="text-xs text-slate-300 leading-relaxed">
+              Mỗi cây được huấn luyện trên một mẫu con ngẫu nhiên (lấy mẫu có hoàn lại). Trung bình mỗi cây chỉ nhìn thấy <strong>~63.2%</strong> dữ liệu, <strong>36.8%</strong> còn lại (gồm cả ngoại lệ) bị bỏ ngoài lề. Ngoại lệ không thể làm ô nhiễm toàn bộ rừng!
+            </p>
+          </div>
+
+          <div class="bg-slate-950/70 p-4 rounded-xl border border-slate-800 space-y-2 hover:border-teal-500/40 transition-all">
+            <div class="flex items-center gap-2 text-teal-400 font-bold text-xs uppercase tracking-wider">
+              <i data-lucide="split" class="w-4 h-4"></i>
+              <span>2. Feature Randomness</span>
+            </div>
+            <p class="text-xs text-slate-300 leading-relaxed">
+              Tại mỗi nút phân nhánh, chỉ có một tập con ngẫu nhiên các đặc trưng <span class="font-mono text-teal-300 font-semibold">(khoảng &radic;M thuộc tính)</span> được đưa ra xem xét. Điều này ngăn một thuộc tính quá mạnh chi phối tất cả các cây, tạo ra các cây có <strong>góc nhìn đa dạng và độc lập</strong>.
+            </p>
+          </div>
+
+          <div class="bg-slate-950/70 p-4 rounded-xl border border-slate-800 space-y-2 hover:border-cyan-500/40 transition-all">
+            <div class="flex items-center gap-2 text-cyan-400 font-bold text-xs uppercase tracking-wider">
+              <i data-lucide="vote" class="w-4 h-4"></i>
+              <span>3. Bỏ Phiếu Đa Số</span>
+            </div>
+            <p class="text-xs text-slate-300 leading-relaxed">
+              Dự đoán cuối cùng được quyết định bằng cách lấy số đông (Majority Vote). Dù 1-2 cây con bị ngoại lệ đánh lừa, <strong>hầu hết các cây còn lại vẫn giữ đúng quy luật phổ quát</strong> và bỏ phiếu lấn át hoàn toàn!
+            </p>
+          </div>
+        </div>
+      </div>
+
+      <!-- ĐẤU TRƯỜNG THỰC NGHIỆM: SINGLE TREE VS RANDOM FOREST TRÊN DỮ LIỆU NGOẠI LỆ -->
+      <div class="bg-slate-900/80 rounded-2xl border border-slate-800 shadow-xl p-6 space-y-6">
+        
+        <!-- Header Đấu Trường & Tham Số Rừng -->
+        <div class="flex flex-col lg:flex-row lg:items-center justify-between gap-4 pb-4 border-b border-slate-800">
+          <div>
+            <h3 class="text-base font-bold text-white flex items-center gap-2">
+              <i data-lucide="swords" class="w-5 h-5 text-amber-400"></i>
+              <span>Đấu Trường Đối Đầu: Cây Đơn Lẻ (Single Tree) vs Rừng Ngẫu Nhiên (Random Forest)</span>
+            </h3>
+            <p class="text-xs text-slate-400 mt-1">
+              Thử nghiệm trực tiếp trên bộ dữ liệu <span class="text-rose-400 font-semibold font-mono">Duyệt Vay & Ngoại Lệ (Overfitting Demo)</span> với Khách 17 (Nợ xấu nhưng vẫn duyệt) và Khách 18 (Hồ sơ đẹp nhưng bị từ chối).
+            </p>
+          </div>
+
+          <!-- Controls Rừng -->
+          <div class="flex flex-wrap items-center gap-3">
+            <div class="flex items-center gap-2 bg-slate-950 px-3 py-1.5 rounded-xl border border-slate-800 text-xs">
+              <label for="rf-trees-select" class="text-slate-400 font-medium whitespace-nowrap">Số cây (N):</label>
+              <select id="rf-trees-select" class="bg-slate-900 text-emerald-400 font-bold font-mono outline-none rounded px-2 py-0.5 border border-slate-700">
+                <option value="3">3 Cây</option>
+                <option value="5">5 Cây</option>
+                <option value="7" selected>7 Cây (Khuyên dùng)</option>
+                <option value="11">11 Cây</option>
+                <option value="15">15 Cây</option>
+                <option value="21">21 Cây</option>
+              </select>
+            </div>
+
+            <div class="flex items-center gap-2 bg-slate-950 px-3 py-1.5 rounded-xl border border-slate-800 text-xs">
+              <label for="rf-depth-select" class="text-slate-400 font-medium whitespace-nowrap">Độ sâu mỗi cây:</label>
+              <select id="rf-depth-select" class="bg-slate-900 text-cyan-400 font-bold font-mono outline-none rounded px-2 py-0.5 border border-slate-700">
+                <option value="2">2 tầng</option>
+                <option value="3" selected>3 tầng</option>
+                <option value="4">4 tầng</option>
+              </select>
+            </div>
+
+            <button id="btn-retrain-rf" class="px-4 py-2 bg-gradient-to-r from-emerald-500 to-teal-600 hover:from-emerald-400 hover:to-teal-500 text-slate-950 font-bold text-xs rounded-xl shadow-lg shadow-emerald-500/20 flex items-center gap-2 transition-all">
+              <i data-lucide="refresh-cw" class="w-4 h-4"></i>
+              <span>Huấn Luyện Lại Rừng</span>
+            </button>
+          </div>
+        </div>
+
+        <!-- Mẫu Hồ Sơ Test Thử Nghiệm Nhanh -->
+        <div class="bg-slate-950/60 p-4 rounded-xl border border-slate-800/80 space-y-3">
+          <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+            <span class="text-xs font-bold text-slate-300 flex items-center gap-2">
+              <i data-lucide="user-check" class="w-4 h-4 text-cyan-400"></i>
+              Chọn Hồ Sơ Khách Hàng Cần Thẩm Định Vay:
+            </span>
+            <div class="flex flex-wrap gap-2">
+              <button id="btn-preset-outlier1" class="px-3 py-1 bg-rose-950/40 hover:bg-rose-900/60 border border-rose-500/40 text-rose-300 text-xs rounded-lg font-medium transition-all flex items-center gap-1.5">
+                <span>⚠️ Khách 17 (Ngoại Lệ Tập Học)</span>
+              </button>
+              <button id="btn-preset-newbad" class="px-3 py-1 bg-red-900/40 hover:bg-red-800/60 border border-red-500/50 text-red-200 text-xs rounded-lg font-bold transition-all flex items-center gap-1.5 shadow-sm">
+                <span>🚨 Khách MỚI Nợ Xấu (Hồ Sơ Ngoài)</span>
+              </button>
+              <button id="btn-preset-outlier2" class="px-3 py-1 bg-amber-950/40 hover:bg-amber-900/60 border border-amber-500/40 text-amber-300 text-xs rounded-lg font-medium transition-all flex items-center gap-1.5">
+                <span>⚠️ Khách 18 (Ngoại Lệ Bị Oan)</span>
+              </button>
+              <button id="btn-preset-normal" class="px-3 py-1 bg-emerald-950/40 hover:bg-emerald-900/60 border border-emerald-500/40 text-emerald-300 text-xs rounded-lg font-medium transition-all flex items-center gap-1.5">
+                <span>✅ Khách Bình Thường Đủ Chuẩn</span>
+              </button>
+              <button id="btn-preset-normal-bad" class="px-3 py-1 bg-slate-800 hover:bg-slate-700 border border-slate-600 text-slate-300 text-xs rounded-lg font-medium transition-all flex items-center gap-1.5">
+                <span>❌ Khách Dưới Chuẩn (Từ Chối)</span>
+              </button>
+            </div>
+          </div>
+
+          <!-- Các trường dữ liệu của hồ sơ đang thử nghiệm -->
+          <div class="grid grid-cols-2 sm:grid-cols-4 gap-3 pt-1">
+            <div class="bg-slate-900 p-2.5 rounded-lg border border-slate-800">
+              <label class="block text-[11px] text-slate-400 mb-1">Điểm tín dụng (CreditScore: 500-800)</label>
+              <input id="rf-input-credit" type="number" value="515" step="5" class="w-full bg-slate-950 text-emerald-400 font-mono text-xs font-semibold rounded px-2 py-1 border border-slate-700 outline-none">
+            </div>
+
+            <div class="bg-slate-900 p-2.5 rounded-lg border border-slate-800">
+              <label class="block text-[11px] text-slate-400 mb-1">Thu nhập (Income - triệu VNĐ)</label>
+              <input id="rf-input-income" type="number" value="13" step="1" class="w-full bg-slate-950 text-cyan-400 font-mono text-xs font-semibold rounded px-2 py-1 border border-slate-700 outline-none">
+            </div>
+
+            <div class="bg-slate-900 p-2.5 rounded-lg border border-slate-800">
+              <label class="block text-[11px] text-slate-400 mb-1">Độ tuổi (Age)</label>
+              <input id="rf-input-age" type="number" value="23" step="1" class="w-full bg-slate-950 text-indigo-400 font-mono text-xs font-semibold rounded px-2 py-1 border border-slate-700 outline-none">
+            </div>
+
+            <div class="bg-slate-900 p-2.5 rounded-lg border border-slate-800">
+              <label class="block text-[11px] text-slate-400 mb-1">Tài sản thế chấp (HasCollateral)</label>
+              <select id="rf-input-collateral" class="w-full bg-slate-950 text-white text-xs font-semibold rounded px-2 py-1 border border-slate-700 outline-none">
+                <option value="Yes">Yes (Có tài sản)</option>
+                <option value="No" selected>No (Không có)</option>
+              </select>
+            </div>
+          </div>
+        </div>
+
+        <!-- BẢNG SO SÁNH 2 CỘT: CÂY ĐƠN LẺ VS RỪNG NGẪU NHIÊN -->
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+          
+          <!-- Cột Trái: Cây Đơn Lẻ (Single Tree) -->
+          <div class="bg-slate-950 rounded-2xl border border-rose-500/30 p-5 space-y-4 relative overflow-hidden shadow-lg">
+            <div class="absolute top-0 right-0 px-3 py-1 bg-rose-500/20 text-rose-400 font-bold text-[10px] uppercase rounded-bl-xl border-b border-l border-rose-500/30 tracking-wider">
+              Mô hình Đơn Lẻ (Single Tree)
+            </div>
+
+            <div class="flex items-center gap-3">
+              <div class="w-10 h-10 rounded-xl bg-rose-500/20 text-rose-400 flex items-center justify-center border border-rose-500/30">
+                <i data-lucide="git-branch" class="w-5 h-5"></i>
+              </div>
+              <div>
+                <h4 class="text-sm font-bold text-white">Cây Quyết Định Đơn Lẻ (Sâu Tối Đa)</h4>
+                <p class="text-xs text-slate-400">Không có cơ chế Ensemble, chỉ dựa vào 1 cây duy nhất</p>
+              </div>
+            </div>
+
+            <!-- Kết Quả Dự Đoán Của Cây Đơn Lẻ -->
+            <div id="single-tree-pred-card" class="bg-slate-900/90 rounded-xl p-4 border border-slate-800 space-y-2">
+              <div class="flex items-center justify-between">
+                <span class="text-xs text-slate-400">Quyết định phê duyệt:</span>
+                <span id="single-tree-result-badge" class="px-3 py-1 rounded-lg text-xs font-black font-mono">Đang tính...</span>
+              </div>
+              <div id="single-tree-alert-box" class="text-xs p-3 rounded-lg border mt-2">
+                <!-- Nội dung giải thích hiện tượng học vẹt -->
+              </div>
+            </div>
+
+            <!-- Phân tích nguyên nhân (Động theo hồ sơ) -->
+            <div class="text-xs text-slate-400 space-y-1.5 bg-slate-900/40 p-3 rounded-xl border border-slate-800/60">
+              <div class="font-semibold text-slate-300 flex items-center gap-1.5">
+                <i data-lucide="alert-triangle" class="w-3.5 h-3.5 text-amber-400"></i>
+                <span id="single-tree-note-title">Phân tích hành vi Cây Đơn Lẻ:</span>
+              </div>
+              <p id="single-tree-note-text" class="leading-relaxed">
+                Đang phân tích...
+              </p>
+            </div>
+          </div>
+
+          <!-- Cột Phải: Rừng Ngẫu Nhiên (Random Forest) -->
+          <div class="bg-slate-950 rounded-2xl border border-emerald-500/40 p-5 space-y-4 relative overflow-hidden shadow-lg shadow-emerald-500/5">
+            <div class="absolute top-0 right-0 px-3 py-1 bg-emerald-500/20 text-emerald-400 font-bold text-[10px] uppercase rounded-bl-xl border-b border-l border-emerald-500/30 tracking-wider">
+              Rừng Ngẫu Nhiên (Majority Vote)
+            </div>
+
+            <div class="flex items-center gap-3">
+              <div class="w-10 h-10 rounded-xl bg-emerald-500/20 text-emerald-400 flex items-center justify-center border border-emerald-500/30">
+                <i data-lucide="trees" class="w-5 h-5"></i>
+              </div>
+              <div>
+                <h4 class="text-sm font-bold text-white">Rừng Ngẫu Nhiên (<span id="rf-tree-count-badge">7</span> Cây Con)</h4>
+                <p class="text-xs text-slate-400">Bỏ phiếu đa số & Triệt tiêu hoàn toàn sự học vẹt</p>
+              </div>
+            </div>
+
+            <!-- Kết Quả Dự Đoán Của Rừng -->
+            <div id="rf-pred-card" class="bg-slate-900/90 rounded-xl p-4 border border-emerald-500/30 space-y-3">
+              <div class="flex items-center justify-between">
+                <span class="text-xs text-slate-400">Quyết định sau bỏ phiếu:</span>
+                <span id="rf-result-badge" class="px-3 py-1 rounded-lg text-xs font-black font-mono">Đang tính...</span>
+              </div>
+
+              <!-- Thanh Tỷ Lệ Phiếu Bầu (Voting Progress Bar) -->
+              <div class="space-y-1.5">
+                <div class="flex items-center justify-between text-[11px] font-mono">
+                  <span class="text-rose-400 font-semibold" id="rf-no-votes-label">Từ Chối (NO): 0 phiếu</span>
+                  <span class="text-emerald-400 font-semibold" id="rf-yes-votes-label">Đồng Ý (YES): 0 phiếu</span>
+                </div>
+                <div class="w-full h-3 bg-slate-950 rounded-full overflow-hidden flex border border-slate-700">
+                  <div id="rf-bar-no" class="bg-rose-500 transition-all duration-500 h-full" style="width: 50%"></div>
+                  <div id="rf-bar-yes" class="bg-emerald-500 transition-all duration-500 h-full" style="width: 50%"></div>
+                </div>
+              </div>
+
+              <div id="rf-alert-box" class="text-xs p-3 rounded-lg border">
+                <!-- Giải thích kết quả Majority Voting -->
+              </div>
+            </div>
+
+            <!-- Nhận xét cơ chế (Động theo hồ sơ) -->
+            <div class="text-xs text-slate-400 space-y-1.5 bg-slate-900/40 p-3 rounded-xl border border-slate-800/60">
+              <div class="font-semibold text-emerald-400 flex items-center gap-1.5">
+                <i data-lucide="check-circle-2" class="w-3.5 h-3.5 text-emerald-400"></i>
+                <span id="rf-note-title">Phân tích hành vi Rừng Ngẫu Nhiên:</span>
+              </div>
+              <p id="rf-note-text" class="leading-relaxed">
+                Đang phân tích...
+              </p>
+            </div>
+          </div>
+        </div>
+
+        <!-- CHI TIẾT PHIẾU BẦU TỪNG CÂY CON TRONG RỪNG -->
+        <div class="bg-slate-950/60 p-5 rounded-xl border border-slate-800 space-y-4">
+          <div class="flex items-center justify-between">
+            <h4 class="text-xs font-bold text-slate-300 uppercase tracking-wider flex items-center gap-2">
+              <i data-lucide="layers" class="w-4 h-4 text-emerald-400"></i>
+              <span>Chi Tiết Phiếu Bầu Của Từng Cây Con Trong Rừng</span>
+            </h4>
+            <span class="text-xs text-slate-500">Mỗi cây sở hữu một tập con thuộc tính riêng biệt</span>
+          </div>
+
+          <!-- Lưới các cây con -->
+          <div id="rf-trees-breakdown-grid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3">
+            <!-- Render động các thẻ cây con -->
+          </div>
+        </div>
+
+      </div>
+
+    </div>
+
+  </main>
+
+  <!-- Modal Chi Tiết Toán Học Cho Node Được Click (Dark Mode) -->
+  <div id="node-detail-modal" class="hidden fixed inset-0 z-50 bg-black/75 backdrop-blur-sm flex items-center justify-center p-4">
+    <div class="bg-slate-900 border border-slate-700/80 shadow-2xl max-w-2xl w-full max-h-[85vh] flex flex-col overflow-hidden rounded-2xl animate-scale-up">
+      <div class="px-6 py-4 bg-slate-950 border-b border-slate-800 flex items-center justify-between">
+        <h3 id="modal-node-title" class="font-bold text-white text-sm flex items-center gap-2">
+          Chi Tiết Phân Nhánh Tại Nút
+        </h3>
+        <button id="btn-close-modal" class="text-slate-400 hover:text-white p-1.5 rounded-lg hover:bg-slate-800 transition-all">
+          <i data-lucide="x" class="w-5 h-5"></i>
+        </button>
+      </div>
+      <div id="modal-node-body" class="p-6 overflow-y-auto space-y-4 flex-1">
+        <!-- Chi tiết phân tích được render tại đây -->
+      </div>
+    </div>
+  </div>
+
+  <!-- Scripts với Cache-Buster v=8 -->
+  <script src="js/datasets.js?v=8"></script>
+  <script src="js/tree-engine.js?v=8"></script>
+  <script src="js/tree-visualizer.js?v=8"></script>
+  <script src="js/boundary-visualizer.js?v=8"></script>
+  <script src="js/math-explainer.js?v=8"></script>
+  <script src="js/random-forest.js?v=8"></script>
+  <script src="js/app.js?v=8"></script>
+  <script>
+    document.addEventListener("DOMContentLoaded", () => {
+      if (typeof lucide !== "undefined") {
+        lucide.createIcons();
+      }
+    });
+  </script>
+</body>
+</html>
